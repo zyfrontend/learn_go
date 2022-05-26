@@ -1,10 +1,7 @@
 package main
 
-import "shopping/common/initialize"
+import "server/routers"
 
-// 测试
 func main() {
-	initialize.LoadConfig()
-	initialize.Mysql()
-	initialize.Router()
+	routers.Start()
 }
