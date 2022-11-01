@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- 表单参数 -->
+    <form
+      action="http://127.0.0.1:8000/form"
+      method="post"
+      action="application/x-www-form-urlencoded"
+    >
+      用户名: <input type="text" name="userName" placeholder="请输入用户名" /><br />
+      密码: <input type="password" name="userPassword" placeholder="请输入你的密码" /><br />
+      <input type="submit" value="提交" />
+    </form>
+    <!-- 单文件上传 -->
+    <form action="http://127.0.0.1:8000/upload" method="post" enctype="multipart/form-data">
+      上传文件:<input type="file" name="file" />
+      <input type="submit" value="提交" />
+    </form>
+    <!-- 指定文件上传 -->
+    <form action="http://127.0.0.1:8000/uploadFile" method="post" enctype="multipart/form-data">
+      上传指定PNG文件:<input type="file" name="file" />
+      <input type="submit" value="提交" />
+    </form>
+  </body>
+</html>
