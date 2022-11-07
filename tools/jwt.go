@@ -1,44 +1,58 @@
 package tools
 
 import (
-	"errors"
 	"fmt"
-	//"github.com/dgrijalva/jwt-go"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/dgrijalva/jwt-go"
+	"time"
 )
 
-func Sign() {
-	token := jwt.New(jwt.SigningMethodHS256)
-	str, err := token.SignedString("123456")
-	fmt.Println(str, err)
+type MyClaims struct {
+	UserId int64 `json:"user_id"`
+	jwt.StandardClaims
 }
 
-func VerifyToken(tokenString string) (*AuthInfo, error) {
-	//解析传入的token
-	//第二个参数是一个回调函数，作用是判断生成token所用的签名算法是否和传入token的签名算法是否一致。
-	//算法匹配就返回密钥，用来解析token.
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, err error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		return []byte(SECRETKEY), nil
-	})
+type CustomClaims struct {
+	UserId int64
+	jwt.StandardClaims
+}
 
-	//err不为空，说明token已过期
+var mysigningKey = []byte("292929290100101293231")
+
+func DispatchToken(id int64) string {
+	c := MyClaims{
+		UserId: id,
+		StandardClaims: jwt.StandardClaims{
+			NotBefore: time.Now().Unix() - 60,       // 签发时间
+			ExpiresAt: time.Now().Unix() + 60*60*24, // 过期时间
+			Issuer:    "zy",                         // 签发人
+		},
+	}
+	// 生成 token MapClaims方式
+	//t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+	//	"exp":      time.Now().Unix() + 5, // 过期时间
+	//	"iss":      id,                    // 签发人id
+	//	"nbf":      time.Now().Unix() - 5, // 签发时间
+	//	"username": "zy",                  // 签发人
+	//})
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
+	// 加密
+	str, err := t.SignedString(mysigningKey)
 	if err != nil {
-		return nil, err
+		fmt.Println(err)
+	}
+	return str
+}
+
+func VerifyToken(tokenString string) {
+	//token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &MyClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return mysigningKey, nil
+	})
+	if err != nil {
+		fmt.Println("err", err)
+		return
 	}
 
-	//将获取的token中的Claims强转为MapClaims
-	claims, ok := token.Claims.(jwt.MapClaims)
-	//判断token是否有效
-	if !(ok && token.Valid) {
-		return nil, errors.New("cannot convert claim to mapClaim")
-	}
-	//获取payload中的数据
-	info := &AuthInfo{
-		ID:       int64(claims["id"].(float64)),
-		Username: claims["username"].(string),
-	}
-	return info, nil
+	//fmt.Println(token.Claims.(*jwt.MapClaims))
+	fmt.Println(token.Claims.(*MyClaims))
 }

@@ -35,11 +35,8 @@ func UserLogin(c *gin.Context) {
 	// 查询数据库
 	var user *TopNftUser
 	mysql.DB.First(&user).Where("address = ?", address)
-	u := AuthInfo{
-		ID:       user.UserId,
-		Username: "zy",
-	}
-	token, _ := tools.Sign(tools.AuthInfo(u), "243223ffslsfsldfl412fdsfsdf")
+
+	token := tools.DispatchToken(user.UserId)
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "success",
