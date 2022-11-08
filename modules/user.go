@@ -2,10 +2,10 @@ package modules
 
 import (
 	"app/dao/mysql"
+	"app/modules/common/response"
 	"app/tools"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"time"
 )
 
@@ -35,37 +35,27 @@ func UserLogin(c *gin.Context) {
 	// 查询数据库
 	var user *TopNftUser
 	mysql.DB.First(&user).Where("address = ?", address)
-
 	token := tools.DispatchToken(user.UserId)
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"message": "success",
-		"data": map[string]interface{}{
-			"info":    user,
-			"x-token": token,
-		},
-	})
+	data := map[string]interface{}{
+		"info":    user,
+		"x-token": token,
+	}
+	response.OkWithData(data, c)
 }
 func GetUserInfo(c *gin.Context) {
+	address := c.PostForm("address")
 	var user *TopNftUser
-	mysql.DB.First(&user)
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"message": "success",
-		"data":    user,
-	})
+	mysql.DB.First(&user).Where("address = ?", address)
+	response.OkWithData(user, c)
 }
 func GetUserList(c *gin.Context) {
 	var users *[]TopNftUser
 	var count int64
 	mysql.DB.Limit(10).Find(&users).Count(&count)
-	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"message": "success",
-		"data": map[string]interface{}{
-			"list":   users,
-			"length": len(*users),
-			"total":  count,
-		},
-	})
+	data := map[string]interface{}{
+		"list":   users,
+		"length": len(*users),
+		"total":  count,
+	}
+	response.OkWithData(data, c)
 }

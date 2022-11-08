@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
@@ -16,6 +17,13 @@ type CustomClaims struct {
 	jwt.StandardClaims
 }
 
+var (
+	TokenExpired     = errors.New("Token is expired")
+	TokenNotValidYet = errors.New("Token not active yet")
+	TokenMalformed   = errors.New("That's not even a token")
+	TokenInvalid     = errors.New("Couldn't handle this token:")
+)
+
 var mysigningKey = []byte("292929290100101293231")
 
 func DispatchToken(id int64) string {
@@ -27,13 +35,7 @@ func DispatchToken(id int64) string {
 			Issuer:    "zy",                         // 签发人
 		},
 	}
-	// 生成 token MapClaims方式
-	//t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-	//	"exp":      time.Now().Unix() + 5, // 过期时间
-	//	"iss":      id,                    // 签发人id
-	//	"nbf":      time.Now().Unix() - 5, // 签发时间
-	//	"username": "zy",                  // 签发人
-	//})
+
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, c)
 	// 加密
 	str, err := t.SignedString(mysigningKey)
@@ -43,16 +45,30 @@ func DispatchToken(id int64) string {
 	return str
 }
 
-func VerifyToken(tokenString string) {
-	//token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+func VerifyToken(tokenString string) (*MyClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &MyClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return mysigningKey, nil
 	})
 	if err != nil {
-		fmt.Println("err", err)
-		return
+		if ve, ok := err.(*jwt.ValidationError); ok {
+			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+				return nil, TokenMalformed
+			} else if ve.Errors&jwt.ValidationErrorExpired != 0 {
+				return nil, TokenExpired
+			} else if ve.Errors&jwt.ValidationErrorNotValidYet != 0 {
+				return nil, TokenNotValidYet
+			} else {
+				return nil, TokenInvalid
+			}
+		}
 	}
+	if token != nil {
+		if claims, ok := token.Claims.(*MyClaims); ok && token.Valid {
+			return claims, nil
+		}
+		return nil, TokenInvalid
 
-	//fmt.Println(token.Claims.(*jwt.MapClaims))
-	fmt.Println(token.Claims.(*MyClaims))
+	} else {
+		return nil, TokenInvalid
+	}
 }
