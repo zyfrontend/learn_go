@@ -11,7 +11,7 @@ import (
 var DB = Init()
 
 func Init() *gorm.DB {
-	sqlDB, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/depm?charset=utf8&parseTime=True&loc=Local")
+	sqlDB, err := sql.Open("mysql", "root:password@tcp(127.0.0.1:3306)/wtc?charset=utf8&parseTime=True&loc=Local")
 	db, _ := gorm.Open(mysql.New(mysql.Config{
 		Conn: sqlDB,
 	}), &gorm.Config{

@@ -59,3 +59,42 @@ func GetUserList(c *gin.Context) {
 	}
 	response.OkWithData(data, c)
 }
+
+func GetPushList(c *gin.Context) {
+
+}
+
+type TopNftOrder struct {
+	OrderId     int64  `json:"order_id"`
+	OrderNo     string `json:"order_no"`
+	OutputNo    string `json:"output_no"`
+	ProductId   int    `json:"product_id"`
+	Type        string `json:"type"`
+	Hashrate    int64  `json:"hashrate"`
+	UserId      int64  `json:"user_id"`
+	Price       string `json:"price"`
+	Num         string `json:"num"`
+	Total       string `json:"total"`
+	PayTotal    string `json:"pay_total"`
+	FromAddress string `json:"from_address"`
+	ToAddress   string `json:"to_address"`
+	Contract    string `json:"contract"`
+	Symbol      string `json:"symbol"`
+	Decimal     string `json:"decimal"`
+	Chain       string `json:"chain"`
+	Status      string `json:"status"`
+	Query       string `json:"query"`
+	CreateTime  string `json:"create_time"`
+}
+
+func GetOrderList(c *gin.Context) {
+	var list *[]TopNftOrder
+	var count int64
+	mysql.DB.Limit(10).Find(&list).Count(&count)
+	data := map[string]interface{}{
+		"data":   list,
+		"length": len(*list),
+		"total":  count,
+	}
+	response.OkWithData(data, c)
+}

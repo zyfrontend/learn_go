@@ -20,7 +20,9 @@ func Routers(r *gin.Engine) {
 	v2.Use(middleware.VerifyPermissions())
 	{
 		// 用户信息
-		v2.GET("/userinfo", modules.GetUserInfo)
-		v2.GET("/user-list", modules.GetUserList)
+		v2.GET("/userInfo", modules.GetUserInfo)
+		v2.GET("/userList", modules.GetUserList)
+		v2.GET("/pushList", modules.GetPushList)
+		v2.GET("/orderList", modules.GetOrderList)
 	}
 }
